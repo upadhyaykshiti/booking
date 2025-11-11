@@ -93,7 +93,22 @@ def book_appointment(request: BookingRequest):
         "confirmation_code": confirmation_code
     }
 
+# @app.get("/api/patient/search")
+# def search_patient_notes(query: str):
+#     results = search_notes(query)
+#     return {"results": results}
+
 @app.get("/api/patient/search")
 def search_patient_notes(query: str):
-    results = search_notes(query)
-    return {"results": results}
+    """Search stored patient notes using ChromaDB semantic search."""
+    try:
+        results = search_notes(query)
+        formatted = {
+            "ids": results.get("ids", [[]])[0],
+            "metadatas": results.get("metadatas", [[]])[0],
+        }
+        print(f"🔍 Search query '{query}' returned {len(formatted['ids'])} results")
+        return {"results": formatted}
+    except Exception as e:
+        print(f"❌ Search error: {e}")
+        raise HTTPException(status_code=500, detail="Search failed")
